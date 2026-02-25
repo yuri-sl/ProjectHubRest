@@ -49,8 +49,8 @@ public class UserResource {
         try{
             List<FetchUserInfos> listaUsuarios = userService.buscarUsuarioPorNome(username);
             return RestResponse.status(Response.Status.ACCEPTED,listaUsuarios);
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            return RestResponse.status(Response.Status.BAD_REQUEST,e.getMessage());
         }
 
 
