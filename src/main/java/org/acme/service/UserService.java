@@ -18,19 +18,8 @@ public class UserService {
     final UserRepository userRepository;
 
     public List<FetchUserInfos> buscarTodosUsuarios(){
-        List<FetchUserInfos> listaUsuarios = new ArrayList<>();
         List<UserEntity> listaUsuariosBanco = this.userRepository.findAll().stream().toList();
-        for(UserEntity u : listaUsuariosBanco){
-            FetchUserInfos userRebuilt = FetchUserInfos.builder()
-                    .id(u.getId())
-                    .name(u.getName())
-                    .email(u.getEmail())
-                    .createdAt(u.getCreatedAt())
-                    .build();
-
-            listaUsuarios.add(userRebuilt);
-        }
-        return listaUsuarios;
+        return FetchUserInfos.mapearListaEntidadeDTO(listaUsuariosBanco);
     }
 
     public boolean validarCamposInput(CreateNewUserDTORequest createNewUserDTORequest){
@@ -45,21 +34,11 @@ public class UserService {
 
     public List<FetchUserInfos> buscarUsuarioPorNome(String username){
         List<UserEntity> usuariosBucados = userRepository.fetchUsersByName(username);
-        List<FetchUserInfos> usuariosPopuladosDTO = new ArrayList<>();
+
         if(usuariosBucados.isEmpty()){
             throw new IllegalArgumentException("Usuário não encontrado");
         }
-
-        for(UserEntity u : usuariosBucados){
-            FetchUserInfos userRebuilt = FetchUserInfos.builder()
-                    .id(u.getId())
-                    .name(u.getName())
-                    .email(u.getEmail())
-                    .createdAt(u.getCreatedAt())
-                    .build();
-            usuariosPopuladosDTO.add(userRebuilt);
-        }
-        return usuariosPopuladosDTO;
+        return FetchUserInfos.mapearListaEntidadeDTO(usuariosBucados);
     }
 
     @Transactional
@@ -75,14 +54,7 @@ public class UserService {
             userRepository.persist(usuarioCriadoNovo);
             userRepository.flush();
 
-            FetchUserInfos fetchUserInfos = FetchUserInfos.builder()
-                    .id(usuarioCriadoNovo.getId())
-                    .name(usuarioCriadoNovo.getName())
-                    .email(usuarioCriadoNovo.getEmail())
-                    .createdAt(usuarioCriadoNovo.getCreatedAt())
-                    .build();
-
-            return fetchUserInfos;
+            return FetchUserInfos.mapearEntidadeDTO(usuarioCriadoNovo);
         }catch (IllegalArgumentException e){
             throw new IllegalArgumentException("Todos os campos devem estar preenchidos");
         }
