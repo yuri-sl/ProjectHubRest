@@ -59,4 +59,36 @@ public class UserService {
             throw new IllegalArgumentException("Todos os campos devem estar preenchidos");
         }
     }
+    public FetchUserInfos listarUsuarioPorId(long userId){
+        UserEntity usuarioEncontrado = userRepository.findById(userId);
+        return FetchUserInfos.mapearEntidadeDTO(usuarioEncontrado);
+    }
+
+    @Transactional
+    public void deletarUsuarioPorId(long userId){
+        try{
+            UserEntity usuarioEncontrado = userRepository.findById(userId);
+            if(usuarioEncontrado == null){
+                throw new IllegalArgumentException("Usuário não encontrado no sistema");
+            }
+            userRepository.deleteById(userId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Usuário não encontrado");
+        }
+    }
+    @Transactional
+    public void updateUserById(long userId,CreateNewUserDTORequest dadosAtuallizacao){
+        try{
+            UserEntity usuarioEncontrado = userRepository.findById(userId);
+            if(usuarioEncontrado == null){
+                throw new IllegalArgumentException("Usuário não encontrado no sistema");
+            }
+            usuarioEncontrado.setName(dadosAtuallizacao.getName());
+            usuarioEncontrado.setEmail(dadosAtuallizacao.getEmail());
+            usuarioEncontrado.setPasswordHash(dadosAtuallizacao.getPasswordHash());
+        }catch (IllegalArgumentException e){
+            throw new IllegalArgumentException("Usuário não encontrado");
+        }
+
+    }
 }

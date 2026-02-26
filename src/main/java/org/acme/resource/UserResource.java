@@ -1,16 +1,14 @@
 package org.acme.resource;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
 import org.acme.dto.request.CreateNewUserDTORequest;
 import org.acme.dto.response.Users.FetchUserInfos;
 import org.acme.entity.UserEntity;
 import org.acme.service.UserService;
+import org.hibernate.engine.spi.Status;
 import org.jboss.resteasy.reactive.RestResponse;
 
 import java.util.List;
@@ -21,6 +19,7 @@ import java.util.List;
 public class UserResource {
     private final UserService userService;
 
+    @Path("/listall")
     @GET
     public RestResponse<?> fetchAllUsers(){
         try{
@@ -29,6 +28,39 @@ public class UserResource {
         } catch (RuntimeException e) {
             return RestResponse.status(RestResponse.Status.BAD_REQUEST);
         }
+    }
+
+    @Path("/{userId}")
+    @GET()
+    public RestResponse<?> getUserById(@PathParam("userId") long userId){
+        try{
+            FetchUserInfos dados = userService.listarUsuarioPorId(userId);
+            return  RestResponse.status(Response.Status.ACCEPTED,dados);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @DELETE
+    @Path("/{userId}")
+    public RestResponse<?> deleteUserById(@PathParam("userId") long userId){
+        try{
+            userService.deletarUsuarioPorId(userId);
+            return RestResponse.status(RestResponse.Status.fromStatusCode(204));
+        } catch (IllegalArgumentException e) {
+            return RestResponse.status(Response.Status.BAD_REQUEST,e.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("/{userId}")
+    public RestResponse<?> updateUserById(@PathParam("userId") long userId, CreateNewUserDTORequest dados){
+        try{
+            userService.updateUserById(userId,dados);
+            return  RestResponse.status(RestResponse.Status.fromStatusCode(204));
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @POST
@@ -43,16 +75,13 @@ public class UserResource {
         }
     }
 
-    @Path("/{username}")
     @GET
-    public RestResponse<?> fetchUserById(@PathParam("username") String username){
+    public RestResponse<?> fetchUserByName(@QueryParam("username") String username){
         try{
             List<FetchUserInfos> listaUsuarios = userService.buscarUsuarioPorNome(username);
             return RestResponse.status(Response.Status.ACCEPTED,listaUsuarios);
         } catch (IllegalArgumentException e) {
             return RestResponse.status(Response.Status.BAD_REQUEST,e.getMessage());
         }
-
-
     }
 }
